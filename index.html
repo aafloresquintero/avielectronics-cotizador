@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Cotizador YuranSnacks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#0b3d91;
+    --azul-osc:#082a66;
+    --celeste:#d9efff;
+    --celeste-2:#9fd3f7;
+    --rojo:#ff7a7a;
+    --rojo-claro:#ffe3e3;
+    --texto:#0a2247;
+    --blanco:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--celeste);color:var(--texto)}
+  body{
+    font-family:'Rajdhani','Eurostile','Bank Gothic','Segoe UI',Arial,sans-serif;
+    font-size:17px;
+    font-weight:600;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:12px;
+  }
+  .app{width:100%;max-width:440px}
+  header{
+    background:var(--azul);
+    color:var(--blanco);
+    padding:12px 14px;
+    border-radius:4px;
+    border-bottom:5px solid var(--rojo);
+    margin-bottom:10px;
+  }
+  header h1{
+    font-family:'Orbitron','Eurostile','Bank Gothic','Segoe UI',Arial,sans-serif;
+    font-size:18px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  header p{font-size:14px;color:var(--celeste-2);margin-top:2px}
+  .card{
+    background:var(--blanco);
+    border:2px solid var(--azul);
+    border-radius:4px;
+    padding:12px;
+    margin-bottom:10px;
+  }
+  label{
+    display:block;
+    font-family:'Orbitron','Eurostile','Segoe UI',Arial,sans-serif;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--azul);
+    margin-bottom:4px;
+  }
+  select,input[type=number]{
+    width:100%;
+    font:inherit;
+    font-size:16px;
+    color:var(--texto);
+    background:var(--celeste);
+    border:2px solid var(--azul);
+    border-radius:3px;
+    padding:10px;
+    margin-bottom:10px;
+  }
+  select{font-size:15px}
+  .fila{display:flex;gap:10px}
+  .fila > div{flex:1}
+  .tramo{
+    background:var(--rojo-claro);
+    border-left:5px solid var(--rojo);
+    padding:8px 10px;
+    font-size:15px;
+    margin-bottom:10px;
+    border-radius:2px;
+  }
+  .tramo b{color:var(--azul)}
+  button{
+    width:100%;
+    font-family:'Orbitron','Eurostile','Segoe UI',Arial,sans-serif;
+    font-size:14px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    border:none;
+    border-radius:3px;
+    padding:13px;
+    cursor:pointer;
+  }
+  .btn-calc{background:var(--azul);color:var(--blanco);border-bottom:4px solid var(--azul-osc)}
+  .btn-copy{background:var(--rojo);color:var(--azul-osc);border-bottom:4px solid #e05a5a;margin-top:10px}
+  button:active{transform:translateY(2px)}
+  #resultado{display:none}
+  .linea{
+    display:flex;
+    justify-content:space-between;
+    padding:5px 0;
+    border-bottom:1px dashed var(--celeste-2);
+    font-size:16px;
+  }
+  .linea.desc span:last-child{color:#c23a3a}
+  .total{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--azul);
+    color:var(--blanco);
+    padding:10px;
+    margin-top:8px;
+    border-radius:3px;
+  }
+  .total span:first-child{font-size:14px;text-transform:uppercase}
+  .total span:last-child{
+    font-family:'Orbitron','Eurostile','Segoe UI',Arial,sans-serif;
+    font-size:20px;
+  }
+  #resumen{
+    background:var(--celeste);
+    border:1px solid var(--celeste-2);
+    border-radius:3px;
+    padding:8px;
+    margin-top:10px;
+    font-size:14px;
+    white-space:pre-wrap;
+    line-height:1.3;
+  }
+  #aviso{
+    text-align:center;
+    font-size:14px;
+    color:var(--azul);
+    margin-top:6px;
+    min-height:18px;
+  }
+  .error{color:#c23a3a;font-size:14px;margin-bottom:8px;display:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Cotizador YuranSnacks</h1>
+    <p>Pantallas interactivas · Cotiza en segundos</p>
+  </header>
+
+  <div class="card">
+    <label for="producto">Producto</label>
+    <select id="producto"></select>
+
+    <div class="fila">
+      <div>
+        <label for="cantidad">Cantidad</label>
+        <input type="number" id="cantidad" min="1" step="1" value="1" inputmode="numeric">
+      </div>
+      <div>
+        <label>Precio unitario</label>
+        <input type="text" id="precioUnit" readonly style="margin-bottom:10px">
+      </div>
+    </div>
+
+    <label>Descuento aplicado</label>
+    <div class="tramo" id="tramo"></div>
+
+    <div class="error" id="error">Ingresa una cantidad válida (mínimo 1).</div>
+
+    <button class="btn-calc" id="btnCalcular">Calcular</button>
+  </div>
+
+  <div class="card" id="resultado">
+    <div class="linea"><span>Monto sin descuento</span><span id="rSin"></span></div>
+    <div class="linea desc"><span id="rDescEtiqueta">Descuento</span><span id="rDesc"></span></div>
+    <div class="total"><span>Monto final</span><span id="rFinal"></span></div>
+    <div id="resumen"></div>
+    <button class="btn-copy" id="btnCopiar">Copiar resumen</button>
+    <div id="aviso"></div>
+  </div>
+
+</div>
+
+<script>
+  // ---------- DATOS FIJOS ----------
+  var PRODUCTOS = [
+    { nombre: 'PANTALLA INTERACTIVA SAMSUNG 65" LH65WACWLGCXZA', precio: 6499 },
+    { nombre: 'PANTALLA INTERACTIVA SAMSUNG 75" LH75WACWLGCXZA', precio: 7199 },
+    { nombre: 'PANTALLA INTERACTIVA SAMSUNG 86" LH86WAFPLGCXZX', precio: 7899 },
+    { nombre: 'PANTALLA INTERACTIVA LG 75" 75TR3DQ', precio: 7099 },
+    { nombre: 'PANTALLA INTERACTIVA LG 86" 86TR3DQ', precio: 7799 },
+    { nombre: 'PANTALLA INTERACTIVA LG 98" 98TR3DK-B', precio: 23199 },
+    { nombre: 'PANTALLA INTERACTIVA HUAWEI 65" 115908', precio: 7199 },
+    { nombre: 'PANTALLA INTERACTIVA HUAWEI 75" 115910', precio: 8599 },
+    { nombre: 'PANTALLA INTERACTIVA HUAWEI 86" 115912', precio: 10799 }
+  ];
+
+  // Descuento por volumen según cantidad
+  function obtenerTramo(cant) {
+    if (cant >= 5) return { pct: 15, texto: 'Desde 5 unidades: 15% de descuento y delivery gratis en Lima' };
+    if (cant >= 3) return { pct: 10, texto: 'Desde 3 unidades: 10% de descuento y delivery gratis en Lima' };
+    if (cant === 2) return { pct: 5, texto: 'Por 2 unidades: 5% de descuento y delivery gratis en Lima' };
+    return { pct: 0, texto: 'Por 1 unidad: oferta regular y delivery gratis en Lima' };
+  }
+
+  // ---------- UTILIDADES ----------
+  function soles(n) {
+    return 'S/ ' + n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function $(id) { return document.getElementById(id); }
+
+  var selProducto = $('producto');
+  var inCantidad = $('cantidad');
+  var ultimoResumen = '';
+
+  PRODUCTOS.forEach(function (p, i) {
+    var op = document.createElement('option');
+    op.value = i;
+    op.textContent = p.nombre + ' (S/ ' + p.precio.toLocaleString('es-PE') + ')';
+    selProducto.appendChild(op);
+  });
+
+  function cantidadValida() {
+    var c = parseInt(inCantidad.value, 10);
+    return (isNaN(c) || c < 1) ? null : c;
+  }
+
+  // Actualiza precio unitario y tramo de descuento al cambiar los datos
+  function actualizarVista() {
+    var p = PRODUCTOS[selProducto.value];
+    $('precioUnit').value = soles(p.precio);
+    var c = cantidadValida();
+    $('tramo').innerHTML = c ? '<b>' + obtenerTramo(c).texto + '</b>' : 'Ingresa una cantidad';
+    $('resultado').style.display = 'none';
+    $('error').style.display = 'none';
+  }
+
+  selProducto.addEventListener('change', actualizarVista);
+  inCantidad.addEventListener('input', actualizarVista);
+
+  // ---------- CÁLCULO ----------
+  $('btnCalcular').addEventListener('click', function () {
+    var c = cantidadValida();
+    if (!c) {
+      $('error').style.display = 'block';
+      $('resultado').style.display = 'none';
+      return;
+    }
+    $('error').style.display = 'none';
+
+    var p = PRODUCTOS[selProducto.value];
+    var tramo = obtenerTramo(c);
+    var sinDesc = p.precio * c;
+    var montoDesc = sinDesc * tramo.pct / 100;
+    var final = sinDesc - montoDesc;
+
+    $('rSin').textContent = soles(sinDesc);
+    $('rDescEtiqueta').textContent = 'Descuento (' + tramo.pct + '%)';
+    $('rDesc').textContent = '- ' + soles(montoDesc);
+    $('rFinal').textContent = soles(final);
+
+    ultimoResumen =
+      'COTIZACIÓN AVI ELECTRONICS\n' +
+      'Producto: ' + p.nombre + '\n' +
+      'Cantidad: ' + c + '\n' +
+      'Precio unitario: ' + soles(p.precio) + '\n' +
+      'Monto sin descuento: ' + soles(sinDesc) + '\n' +
+      'Descuento (' + tramo.pct + '%): - ' + soles(montoDesc) + '\n' +
+      'MONTO FINAL: ' + soles(final) + '\n' +
+      'Delivery gratis en Lima';
+
+    $('resumen').textContent = ultimoResumen;
+    $('aviso').textContent = '';
+    $('resultado').style.display = 'block';
+    $('resultado').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  // ---------- COPIAR ----------
+  function copiarRespaldo(texto) {
+    var ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  $('btnCopiar').addEventListener('click', function () {
+    if (!ultimoResumen) return;
+    function listo(ok) {
+      $('aviso').textContent = ok ? '¡Resumen copiado! Pégalo en WhatsApp.' : 'No se pudo copiar. Mantén presionado el resumen para copiarlo.';
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(ultimoResumen).then(function () { listo(true); }, function () { listo(copiarRespaldo(ultimoResumen)); });
+    } else {
+      listo(copiarRespaldo(ultimoResumen));
+    }
+  });
+
+  actualizarVista();
+</script>
+</body>
+</html>
